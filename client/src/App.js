@@ -1,14 +1,4 @@
-// function App() {
-//   return (
-//     <div className="App">
-//      <p>Hello!</p>
-//     </div>
-//   );
-// }
-
-// export default App;
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Jumbotron,
   Button,
@@ -17,8 +7,10 @@ import {
   Form,
   FormControl,
 } from "react-bootstrap";
-import Collapse from "react-bootstrap/Collapse";
-import { message, Typography, Modal } from "antd";
+
+import { useAlert } from "react-alert";
+
+import { Modal } from "antd";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "antd/dist/antd.css";
 import axios from "./commons/axios.js";
@@ -26,22 +18,12 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import image from "./components/1.png";
 import validator from "validator";
-const { Link } = Typography;
-
-message.config({
-  top: 500,
-  duration: 2,
-  maxCount: 3,
-  rtl: true,
-  prefixCls: "my-message",
-});
 
 function App(props) {
+  const [popupOpen, setpopupOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [confirmEmail, setConfirmEmail] = useState("");
-
-  const [popupOpen, setpopupOpen] = useState(false);
 
   const renderTooltip = (props) => (
     <Tooltip id="button-tooltip" {...props}>
@@ -49,13 +31,10 @@ function App(props) {
       be in touch with us{" "}
     </Tooltip>
   );
+  const message = useAlert();
 
   const showModal = () => {
     setpopupOpen(true);
-  };
-
-  const handleOk = () => {
-    setpopupOpen(false);
   };
 
   const handleCancel = () => {
@@ -63,10 +42,10 @@ function App(props) {
   };
 
   //post the request to database
-  const onRequest = (props) => {
-    console.log(name);
-    console.log(email);
-    console.log(confirmEmail);
+  const onRequest = () => {
+    console.log("name:", name);
+    console.log("email:", email);
+    console.log("confirm email:", confirmEmail);
 
     //if the name and email are not null
     if (name && email && confirmEmail) {
@@ -78,21 +57,28 @@ function App(props) {
             name: name,
             email: email,
           };
-          {
-            cart: JSON.stringify(updateBody);
-          }
+
+          JSON.stringify(updateBody);
+
           console.log(updateBody);
-          axios.post("/", updateBody).then((response) => {
-            if (response.data.success) {
-              message.success("Thank you for reaching out!");
-              console.log("send success");
-            } else {
-              message.error(response.data.error);
-              console.log(response.data.error);
-              console.log("send error");
-            }
-          });
-          setpopupOpen(false);
+          axios
+            .post("/", updateBody)
+            .then((response) => {
+              if (response.data === "Registered") {
+                message.success("Thank you for reaching out!");
+                console.log("send success");
+              } else {
+                message.error(response.data.error);
+                console.log("response data:", response.data);
+                console.log("send error");
+              }
+            })
+            .catch((error) => {
+              console.log(error);
+              var err = error + " ";
+              err = err.split("\n")[0];
+              message.error(err);
+            });
         } else {
           console.log("Please enter a valid email address");
           message.error("Please enter a valid email address");
@@ -105,55 +91,6 @@ function App(props) {
       console.log("Please enter completed & valid information");
       message.error("Please enter completed & valid information");
     }
-  };
-
-  //modal will open once button being clicked
-  const RequestModal = () => {
-    return (
-      <>
-        <Modal
-          title="Hi, nice to meet you"
-          visible={popupOpen}
-          onOk={() => {
-            handleOk();
-            onRequest();
-          }}
-          onCancel={handleCancel}
-        >
-          <Form>
-            <Form.Group controlId="formBasic">
-              <Form.Label>Full Name</Form.Label>
-              <Form.Control
-                style={{ fontSize: 12 }}
-                placeholder="At least 3 characters long"
-                onChange={(e) => setName(e.target.value)}
-              />
-              <Form.Text className="text-muted">
-                Your info is secured with us.
-              </Form.Text>
-            </Form.Group>
-            <Form.Group controlId="email">
-              <Form.Label>Email</Form.Label>
-              <FormControl
-                style={{ fontSize: 12 }}
-                type="email"
-                placeholder="Please enter your valid email"
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group controlId="confirmEmail">
-              <Form.Label>Confirm Email</Form.Label>
-              <FormControl
-                style={{ fontSize: 12 }}
-                type="email"
-                placeholder="Please enter your email again"
-                onChange={(e) => setConfirmEmail(e.target.value)}
-              />
-            </Form.Group>
-          </Form>
-        </Modal>
-      </>
-    );
   };
 
   return (
@@ -225,7 +162,49 @@ function App(props) {
               </Button>
             </OverlayTrigger>
 
-            <RequestModal />
+            <>
+              <Modal
+                title="Hi, nice to meet you"
+                visible={popupOpen}
+                onOk={() => {
+                  handleCancel();
+                  onRequest();
+                }}
+                onCancel={handleCancel}
+              >
+                <Form>
+                  <Form.Group controlId="formBasic">
+                    <Form.Label>Full Name</Form.Label>
+                    <Form.Control
+                      style={{ fontSize: 12 }}
+                      placeholder="At least 3 characters long"
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                    <Form.Text className="text-muted">
+                      Your info is secured with us.
+                    </Form.Text>
+                  </Form.Group>
+                  <Form.Group controlId="email">
+                    <Form.Label>Email</Form.Label>
+                    <FormControl
+                      style={{ fontSize: 12 }}
+                      type="email"
+                      placeholder="Please enter your valid email"
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </Form.Group>
+                  <Form.Group controlId="confirmEmail">
+                    <Form.Label>Confirm Email</Form.Label>
+                    <FormControl
+                      style={{ fontSize: 12 }}
+                      type="email"
+                      placeholder="Please enter your email again"
+                      onChange={(e) => setConfirmEmail(e.target.value)}
+                    />
+                  </Form.Group>
+                </Form>
+              </Modal>
+            </>
           </div>
           <br />
         </Jumbotron>

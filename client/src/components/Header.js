@@ -1,6 +1,5 @@
 import { AppBar, Toolbar, Typography, makeStyles } from "@material-ui/core";
 import React from "react";
-import favicon from "./favicon.ico";
 
 const useStyles = makeStyles(() => ({
   header: {
