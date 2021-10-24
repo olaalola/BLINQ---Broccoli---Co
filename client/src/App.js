@@ -19,7 +19,7 @@ import Footer from "./components/Footer";
 import image from "./components/1.png";
 import validator from "validator";
 
-function App(props) {
+function App() {
   const [popupOpen, setpopupOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -49,43 +49,49 @@ function App(props) {
 
     //if the name and email are not null
     if (name && email && confirmEmail) {
-      //check if the email address is valid
-      if (email === confirmEmail) {
-        if (validator.isEmail(email)) {
-          console.log("email confirmed");
-          const updateBody = {
-            name: name,
-            email: email,
-          };
+      //check if the name is at least 3 characters
+      if (name.length >= 3) {
+        //check if the email address is valid
+        if (email === confirmEmail) {
+          if (validator.isEmail(email)) {
+            console.log("email confirmed");
+            const updateBody = {
+              name: name,
+              email: email,
+            };
 
-          JSON.stringify(updateBody);
+            JSON.stringify(updateBody);
 
-          console.log(updateBody);
-          axios
-            .post("/", updateBody)
-            .then((response) => {
-              if (response.data === "Registered") {
-                message.success("Thank you for reaching out!");
-                console.log("send success");
-              } else {
-                message.error(response.data.error);
-                console.log("response data:", response.data);
-                console.log("send error");
-              }
-            })
-            .catch((error) => {
-              console.log(error);
-              var err = error + " ";
-              err = err.split("\n")[0];
-              message.error(err);
-            });
+            console.log(updateBody);
+            axios
+              .post("/", updateBody)
+              .then((response) => {
+                if (response.data === "Registered") {
+                  message.success("Thank you for reaching out!");
+                  console.log("send success");
+                } else {
+                  message.error(response.data.error);
+                  console.log("response data:", response.data);
+                  console.log("send error");
+                }
+              })
+              .catch((error) => {
+                console.log(error);
+                var err = error + " ";
+                err = err.split("\n")[0];
+                message.error(err);
+              });
+          } else {
+            console.log("Please enter a valid email address");
+            message.error("Please enter a valid email address");
+          }
         } else {
-          console.log("Please enter a valid email address");
-          message.error("Please enter a valid email address");
+          message.error("Your email address is not consistent");
+          console.log("Your email address is not consistent");
         }
       } else {
-        message.error("Your email address is not consistent");
-        console.log("Your email address is not consistent");
+        console.log("name need to be at least 3 characters");
+        message.error("Your name is at least 3 characters long");
       }
     } else {
       console.log("Please enter completed & valid information");
